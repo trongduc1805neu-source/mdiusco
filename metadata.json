@@ -1,0 +1,6 @@
+{
+  "name": "Udemy Clone Layout",
+  "description": "A responsive web application that clones the layout of the Udemy homepage, focusing on the header, search bars, and a horizontally scrollable 'continue learning' section. Built with React, TypeScript, and Tailwind CSS.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

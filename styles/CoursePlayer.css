@@ -1,0 +1,1458 @@
+/* ============================================
+   COURSE PLAYER — Coursera Design System
+   Based on Design.md (Coursera-inspired)
+   All colors via CSS variables — NO hardcoded hex
+   Spacing: 8px grid
+   ============================================ */
+
+/* ─── 1. PLAYER BODY ─── */
+.course-player-body {
+    margin: 0;
+    font-family: var(--font-body);
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ─── 2. COURSE HEADER — compact, frosted glass ─── */
+.course-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 var(--space-3);
+    height: 52px;
+    flex-shrink: 0;
+    background-color: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--color-hairline);
+    position: sticky;
+    top: 0;
+    z-index: 99;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
+}
+
+.back-arrow {
+    color: var(--color-primary);
+    font-size: 14px;
+    text-decoration: none;
+    font-weight: 600;
+    font-family: var(--font-body);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-canvas);
+    transition: background-color 150ms ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.back-arrow:hover {
+    background-color: var(--color-canvas-parchment);
+}
+
+.back-arrow:active {
+    transform: scale(0.97);
+}
+
+.course-title-header {
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--font-heading);
+    color: var(--color-ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.header-link, .header-button {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-size: 14px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: var(--font-body);
+}
+
+.header-button-icon {
+    background-color: var(--color-canvas);
+    border: 1px solid var(--color-hairline);
+    color: var(--color-ink-muted-48);
+    font-size: 12px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    transition: background-color 150ms ease;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.header-button-icon:hover {
+    background-color: var(--color-canvas-parchment);
+}
+
+.header-button-icon:active {
+    transform: scale(0.97);
+}
+
+.header-button {
+    padding: 6px 12px;
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-canvas);
+    transition: background-color 150ms ease;
+}
+
+.header-button:hover {
+    background-color: var(--color-canvas-parchment);
+}
+
+.header-button:active {
+    transform: scale(0.97);
+}
+
+.course-player-wrapper {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+}
+
+/* ─── 4. MAIN CONTENT COLUMN ─── */
+.video-player-section {
+    flex: 1;
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 400px;
+    position: relative;
+}
+
+/* ─── 5. VIDEO PLAYER ─── */
+.video-wrapper {
+    flex-shrink: 0;
+    background-color: #0f1114;
+    transition: max-height 350ms cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 300ms ease;
+    overflow: hidden;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.video-wrapper.video-expanded {
+    max-height: 60vh;
+    opacity: 1;
+}
+
+.video-wrapper.video-hidden {
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.video-player {
+    background-color: #0f1114;
+    position: relative;
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    max-height: 60vh;
+    max-width: calc(60vh * 16 / 9);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ─── 7. INSTRUCTOR BANNER ─── */
+.instructor-banner {
+    width: 100%;
+    height: 100%;
+    min-height: 200px;
+    background: url('https://i.imgur.com/Rn5fMuN.png')
+        center center/cover no-repeat;
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding-left: 5%;
+    box-sizing: border-box;
+}
+
+.instructor-banner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to right, rgba(79,70,229,0.65), rgba(79,70,229,0.25));
+}
+
+.instructor-content {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    position: relative;
+    z-index: 1;
+    margin-left: 5vw;
+}
+
+.instructor-portrait {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    z-index: 2;
+    border: 3px solid white;
+}
+
+.instructor-details {
+    background-color: var(--color-accent);
+    color: white;
+    padding: 1rem 1.5rem 1rem 2.5rem;
+    margin-left: -20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: 0 8px 8px 0;
+}
+
+.instructor-details h2 {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0 0 4px 0;
+    line-height: 1;
+}
+
+.instructor-details p {
+    font-size: 0.8rem;
+    margin: 0 0 0.5rem 0;
+    opacity: 0.85;
+}
+
+.instructor-course-tag {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+/* ─── 8. TABS — Coursera Option Chips ─── */
+.course-info-tabs {
+    flex-shrink: 0;
+    background-color: var(--color-canvas);
+    border-bottom: 1px solid var(--color-hairline);
+}
+
+.course-info-tabs ul {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 10px var(--space-3);
+    gap: 8px;
+}
+
+.course-info-tabs li {
+    margin: 0;
+}
+
+.course-info-tabs a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 32px;
+    padding: 0 16px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--font-body);
+    border-radius: var(--radius-pill);
+    transition: all 200ms ease;
+    outline: none;
+    border: 1px solid transparent;
+}
+
+/* Inactive State: Muted text on transparent */
+.course-info-tabs a {
+    background-color: transparent;
+    color: var(--text-secondary);
+}
+
+.course-info-tabs a:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* Active State: White Pearl chip */
+.course-info-tabs a.active {
+    background-color: var(--background);
+    color: var(--text-primary);
+    border-color: var(--border);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* ─── 9. CONTENT WRAPPER — scrollable area below tabs ─── */
+.content-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+}
+
+/* ─── 10. TAB CONTENT ─── */
+.tab-content {
+    padding: var(--space-2) var(--space-3);
+}
+
+/* PDF / Mocktest full-height panels (no padding) */
+.tab-content.tab-content-pdf {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* ─── 11. OVERVIEW — clean cards ─── */
+.overview-container {
+    /* nothing extra, uses tab-content padding */
+}
+
+.overview-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.overview-card {
+    background: var(--color-canvas);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: var(--shadow-card);
+}
+
+.overview-card-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--color-ink-muted-48);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* ─── 12. RESIZER ─── */
+.resizer {
+    width: 4px;
+    cursor: col-resize;
+    background-color: var(--color-hairline);
+    flex-shrink: 0;
+    transition: background-color 0.2s ease;
+}
+
+.resizer:hover, .resizer:active {
+    background-color: var(--color-accent);
+}
+
+/* ─── 13. SIDEBAR ─── */
+.course-content-sidebar {
+    flex-shrink: 0;
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid var(--color-hairline);
+    min-width: 260px;
+    max-width: 600px;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--color-hairline);
+    flex-shrink: 0;
+    height: 52px;
+    background-color: var(--color-canvas);
+}
+
+.sidebar-header h3 {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--color-ink);
+    letter-spacing: -0.01em;
+}
+
+/* ─── SIDEBAR PROGRESS BAR ─── */
+.sidebar-progress {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-hairline);
+    background: var(--color-canvas);
+    flex-shrink: 0;
+}
+
+.sidebar-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.sidebar-progress-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-ink-muted-48);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.sidebar-progress-count {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+.sidebar-progress-bar-track {
+    width: 100%;
+    height: 4px;
+    background-color: var(--color-hairline);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+}
+
+.sidebar-progress-bar-fill {
+    height: 100%;
+    background: var(--color-primary);
+    border-radius: var(--radius-pill);
+    transition: width 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── 14. CURRICULUM ─── */
+.curriculum {
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+
+/* ─── SECTION (MODULE) ─── */
+.module {
+    border-bottom: 1px solid var(--color-hairline);
+}
+
+.module-header {
+    width: 100%;
+    background: var(--color-canvas);
+    border: none;
+    padding: 12px 16px;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    cursor: pointer;
+    transition: background-color 120ms ease;
+    gap: 8px;
+}
+
+.module-header:hover {
+    background-color: var(--color-canvas-parchment);
+}
+
+.sidebar-group-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-ink-muted-48);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ─── SIDEBAR GROUP HEADERS (Videos / Readings / Mocktests) ─── */
+.sidebar-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px 8px;
+    background: var(--color-canvas);
+    cursor: pointer;
+    border: none;
+    width: 100%;
+    text-align: left;
+    transition: background-color 120ms ease;
+}
+
+.sidebar-group-header:hover {
+    background-color: var(--color-canvas-parchment);
+}
+
+/* ─── LESSON LIST ─── */
+.lesson-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background-color: var(--color-canvas);
+    overflow: hidden;
+    transition: max-height 350ms cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 2000px;
+}
+
+.lesson-list.collapsed {
+    max-height: 0;
+}
+
+.lesson-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 16px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--color-divider-soft);
+    cursor: pointer;
+    outline: none;
+    transition: background-color 120ms ease;
+    position: relative;
+}
+
+.lesson-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: transparent;
+    transition: background-color 150ms ease;
+}
+
+.lesson-list li:hover {
+    background-color: var(--color-canvas-parchment);
+}
+
+.lesson-list li.active {
+    background-color: var(--color-accent-soft) !important;
+    border-left: 3px solid var(--color-primary) !important;
+    padding-left: 13px !important;
+}
+
+.lesson-list li.active::before {
+    display: none !important;
+}
+
+/* ─── 15. LESSON CHECKBOX ─── */
+.lesson-checkbox {
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--color-hairline);
+    background-color: var(--color-canvas);
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 600;
+    color: white;
+    transition: background-color 200ms ease, border-color 200ms ease;
+}
+
+.lesson-checkbox.completed {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.lesson-list li.active .lesson-checkbox:not(.completed) {
+    border-color: var(--color-primary);
+}
+
+/* ─── 16. LESSON INFO ─── */
+.lesson-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+
+.lesson-info > span {
+    font-weight: 400;
+    color: var(--color-ink);
+    font-size: 13px;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lesson-list li.active .lesson-info > span {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.lesson-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--color-ink-muted-48);
+}
+
+/* ─── 17. RESOURCE ITEMS (Workbook, Mocktest in sidebar) ─── */
+.resource-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--color-divider-soft);
+    transition: background-color 120ms ease;
+    position: relative;
+}
+
+.resource-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: transparent;
+    transition: background-color 150ms ease;
+}
+
+.resource-item:hover {
+    background-color: var(--color-canvas-parchment);
+}
+
+.resource-item.active {
+    background-color: var(--color-accent-soft) !important;
+    border-left: 3px solid var(--color-primary) !important;
+    padding-left: 13px !important;
+}
+
+.resource-item.active::before {
+    display: none !important;
+}
+
+.resource-icon {
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.resource-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+    flex: 1;
+}
+
+.resource-name {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--color-ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.resource-type {
+    font-size: 11px;
+    color: var(--color-ink-muted-48);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ─── 18. PDF VIEWER — full-height, no waste ─── */
+.pdf-viewer-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.pdf-tab-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--color-hairline);
+    background: var(--color-canvas);
+    flex-shrink: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.pdf-tab-selector::-webkit-scrollbar {
+    display: none;
+}
+
+.pdf-tab-btn {
+    padding: 6px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-hairline);
+    background: white;
+    color: var(--color-ink-muted-48);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 150ms ease;
+    font-family: var(--font-body);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.pdf-tab-btn:hover {
+    background: var(--color-canvas-parchment);
+    color: var(--color-ink);
+    border-color: var(--color-hairline);
+}
+
+.pdf-tab-btn.active {
+    background: var(--color-primary);
+    color: white;
+    border-color: transparent;
+    border-radius: var(--radius-pill);
+    box-shadow: none;
+}
+
+.pdf-active-title-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--color-canvas);
+    border-bottom: 1px solid var(--color-hairline);
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-ink);
+}
+
+.pdf-active-title-icon {
+    color: var(--color-primary);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.pdf-active-title-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.answer-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: transform 150ms ease;
+    font-family: var(--font-body);
+    border: none;
+    outline: none;
+}
+
+.answer-toggle-btn:active {
+    transform: scale(0.95);
+}
+
+.answer-toggle-btn.viewing-answers {
+    background: var(--color-primary);
+    color: white;
+}
+
+.answer-toggle-btn.viewing-questions {
+    background: var(--color-canvas-parchment);
+    color: var(--color-primary);
+    border: 1px solid var(--color-hairline);
+}
+
+.pdf-iframe {
+    flex: 1;
+    width: 100%;
+    border: none;
+    display: block;
+}
+
+.html-document-viewer {
+    flex: 1;
+    overflow-y: auto;
+    background: white;
+    padding: 24px 32px;
+    font-family: var(--font-body);
+    color: var(--color-ink);
+    line-height: 1.6;
+}
+
+.html-document-viewer h1,
+.html-document-viewer h2,
+.html-document-viewer h3 {
+    color: var(--color-ink);
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+}
+
+.html-document-viewer p {
+    margin-bottom: 1em;
+}
+
+.html-document-viewer pre {
+    font-family: monospace;
+    background: var(--color-canvas-parchment);
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--color-hairline);
+    overflow-x: auto;
+}
+
+.pdf-loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px;
+    color: var(--color-ink-muted-48);
+    gap: 12px;
+}
+
+.pdf-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-canvas-parchment);
+    color: var(--color-ink-muted-48);
+    text-align: center;
+    padding: 40px;
+    gap: 12px;
+}
+
+.pdf-empty-emoji {
+    font-size: 2.5rem;
+}
+
+.pdf-empty-text {
+    font-size: 0.875rem;
+    color: var(--color-ink-muted-48);
+    margin: 0;
+}
+
+/* PDF/Canvas Text Layer Styles for Text Selection */
+.textLayer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    opacity: 1.0;
+    line-height: 1.0;
+}
+
+.textLayer > span {
+    color: transparent;
+    position: absolute;
+    white-space: pre;
+    cursor: text;
+    transform-origin: 0% 0%;
+}
+
+.textLayer ::selection {
+    background: rgba(0, 86, 210, 0.25);
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* ─── 19. NEXT VIDEO OVERLAY ─── */
+.next-video-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(15,15,26,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 10;
+    color: white;
+    text-align: center;
+}
+
+.next-video-box {
+    background: white;
+    padding: 1.5rem 2rem;
+    border-radius: 12px;
+    max-width: 400px;
+    color: var(--color-ink);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+
+.next-video-box h2 {
+    margin-top: 0;
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+
+.next-lesson-title {
+    font-size: 0.85rem;
+    margin: 0 0 1rem;
+    color: var(--color-ink-muted-48);
+}
+
+.next-video-btn, .replay-video-btn {
+    display: block;
+    width: 100%;
+    padding: 0.62rem;
+    margin-bottom: 0.5rem;
+    border-radius: 7px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: background-color 150ms ease;
+}
+
+.next-video-btn {
+    background-color: var(--color-accent);
+    color: white;
+    border: none;
+}
+
+.next-video-btn:hover {
+    background-color: var(--color-secondary);
+}
+
+.replay-video-btn {
+    background-color: transparent;
+    color: var(--color-ink-muted-48);
+    border: 1px solid var(--color-hairline);
+}
+
+.replay-video-btn:hover {
+    background-color: var(--color-canvas-parchment);
+}
+
+/* ─── 20. MOBILE SIDEBAR TOGGLE ─── */
+.mobile-sidebar-toggle {
+    display: flex;
+    align-items: center;
+    font-size: 0.8rem;
+    padding: 4px 10px;
+}
+
+.sidebar-backdrop {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background-color: rgba(15,23,42,0.6);
+    z-index: 1000;
+}
+
+/* ─── 21. DICTIONARY POPOVER ─── */
+.dictionary-popover {
+    position: fixed;
+    z-index: 1000;
+    width: 360px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.dictionary-popover .loaders,
+.dictionary-popover .error {
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.875rem;
+    color: var(--color-ink-muted-48);
+    text-align: center;
+}
+
+.dictionary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--color-hairline);
+    background-color: var(--color-canvas-parchment);
+}
+
+.dictionary-word-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dictionary-word {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin: 0;
+    text-transform: capitalize;
+    color: var(--color-ink);
+}
+
+.pronounce-btn {
+    background: none;
+    border: 1px solid var(--color-hairline);
+    cursor: pointer;
+    color: var(--color-ink-muted-48);
+    font-size: 0.875rem;
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 150ms ease;
+}
+
+.pronounce-btn:hover {
+    background-color: var(--color-canvas-parchment);
+}
+
+.close-dictionary-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    color: var(--color-ink-muted-48);
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    transition: background-color 150ms ease;
+}
+
+.close-dictionary-btn:hover {
+    background-color: var(--color-canvas-parchment);
+    color: var(--color-ink);
+}
+
+.dictionary-phonetic {
+    font-size: 0.8rem;
+    color: var(--color-ink-muted-48);
+    margin: 0;
+}
+
+.dictionary-body {
+    padding: 12px 14px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.meaning-block {
+    margin-bottom: 1rem;
+}
+
+.meaning-block:last-child {
+    margin-bottom: 0;
+}
+
+.part-of-speech {
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-style: italic;
+    margin: 0 0 0.5rem 0;
+    color: var(--color-primary);
+}
+
+.definition-list {
+    list-style: decimal;
+    padding-left: 1.25rem;
+    margin: 0;
+}
+
+.definition-item {
+    margin-bottom: 0.75rem;
+}
+
+.definition-item:last-child {
+    margin-bottom: 0;
+}
+
+.definition-text {
+    font-size: 0.8rem;
+    line-height: 1.5;
+    margin: 0;
+    color: var(--color-ink);
+}
+
+.definition-example {
+    font-style: italic;
+    color: var(--color-ink-muted-48);
+    margin-top: 3px;
+    padding-left: 8px;
+    border-left: 2px solid var(--color-hairline);
+    font-size: 0.8rem;
+}
+
+.synonyms-section {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--color-canvas-parchment);
+}
+
+.synonyms-title {
+    font-weight: 700;
+    margin-bottom: 6px;
+    font-size: 0.7rem;
+    color: var(--color-ink-muted-48);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.synonyms-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.synonym-tag {
+    background-color: var(--color-canvas-parchment);
+    padding: 2px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 0.78rem;
+    color: var(--color-ink);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 120ms ease;
+}
+
+.synonym-tag:hover {
+    background-color: var(--color-accent-soft);
+    color: var(--color-primary);
+}
+
+/* ─── 22. SIDEBAR CLOSE BUTTON ─── */
+.close-sidebar {
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    color: var(--color-ink-muted-48);
+    transition: color 150ms ease;
+}
+
+.close-sidebar:hover {
+    color: var(--color-ink);
+}
+
+/* ─── 23. TRANSLATE & SUMMARY BUTTONS ─── */
+.translate-button {
+    background-color: transparent;
+    border: 1px solid var(--color-hairline);
+    color: var(--color-ink-muted-48);
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-family: var(--font-body);
+    transition: background-color 150ms ease;
+}
+
+.translate-button:hover:not(:disabled) {
+    background-color: var(--color-canvas-parchment);
+    color: var(--color-ink);
+}
+
+.translate-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.summary-section {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-canvas-parchment);
+}
+
+.summary-button {
+    background-color: white;
+    color: var(--color-ink);
+    border: 1px solid var(--color-hairline);
+    padding: 7px 14px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 7px;
+    font-family: var(--font-body);
+    transition: background-color 150ms ease, box-shadow 150ms ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.summary-button:hover:not(:disabled) {
+    background-color: var(--color-canvas-parchment);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.summary-button:disabled {
+    background-color: var(--color-canvas-parchment);
+    color: var(--color-ink-muted-48);
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.summary-loader {
+    margin-top: 0.75rem;
+    color: var(--color-ink-muted-48);
+    font-style: italic;
+    font-size: 0.82rem;
+}
+
+.summary-content {
+    margin-top: 1rem;
+    background-color: white;
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid var(--color-hairline);
+    line-height: 1.6;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.summary-content h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--color-ink);
+}
+
+/* ─── 24. SUMMARY SEGMENTS ─── */
+.summary-segment {
+    padding-bottom: 0.87rem;
+    margin-bottom: 0.875rem;
+    border-bottom: 1px solid var(--color-canvas-parchment);
+    border-left: 2px solid transparent;
+    padding-left: 10px;
+    transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.summary-segment:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+.segment-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    margin-bottom: 4px;
+}
+
+.summary-segment.active {
+    background-color: var(--color-accent-soft);
+    border-left-color: var(--color-primary);
+    border-radius: 0 6px 6px 0;
+}
+
+.segment-time {
+    font-weight: 700;
+    color: var(--color-primary);
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.segment-title {
+    font-weight: 700;
+    color: var(--color-ink);
+    font-size: 0.82rem;
+}
+
+.segment-summary {
+    color: var(--color-ink-muted-48);
+    font-size: 0.82rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+/* ─── 25. RESPONSIVE ─── */
+@media (max-width: 1024px) {
+    .resizer { display: none; }
+    .mobile-sidebar-toggle { display: flex; }
+
+    .course-content-sidebar {
+        position: fixed;
+        top: 0; right: 0; bottom: 0;
+        width: 340px !important;
+        max-width: 90vw;
+        z-index: 1001;
+        transform: translateX(100%);
+        transition: transform 0.3s ease-in-out;
+        box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+    }
+
+    .mobile-sidebar-active .course-content-sidebar {
+        transform: translateX(0);
+    }
+}
+
+/* ─── 26. MODULE TITLE ─── */
+.module-title {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.module-title strong {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-ink);
+    line-height: 1.3;
+}
+
+.module-title span {
+    font-size: 11px;
+    color: var(--color-ink-muted-48);
+    font-weight: 400;
+}
+
+.module-chevron {
+    font-size: 11px;
+    color: var(--color-ink-muted-48);
+    transition: transform 250ms ease;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: inline-block;
+}
+
+.module-chevron.expanded {
+    transform: rotate(0deg);
+}
+
+.module-chevron.collapsed {
+    transform: rotate(-90deg);
+}
+
+/* ─── 27. SCROLLBAR HIDE utility ─── */
+.scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+/* ─── 28. CUSTOM SCROLLBAR (Apple-style) ─── */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.25);
+}
+
+/* ─── 29. DESKTOP SIDEBAR TOGGLE ─── */
+.sidebar-desktop-closed .course-content-sidebar {
+    display: none !important;
+}
+.sidebar-desktop-closed .resizer {
+    display: none !important;
+}
+
+@media (max-width: 1024px) {
+    /* Ensure the mobile active state takes absolute precedence */
+    .mobile-sidebar-active .course-content-sidebar {
+        display: flex !important;
+        transform: translateX(0) !important;
+    }
+}
+
+/* ─── 30. PDF TRANSLATION MODE (HTML5) ─── */
+.translation-mode-active canvas {
+    opacity: 0.08 !important; /* Preserves faint layout shapes/lines in background */
+    transition: opacity 200ms ease;
+}
+
+.translation-mode-active .textLayer {
+    /* Browser-optimized crisp HTML5 text rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+.translation-mode-active .textLayer > span {
+    color: #0f1114 !important; /* Fully visible dark text */
+    background-color: rgba(255, 255, 255, 0.88) !important; /* Soft white mask for readability */
+    transform: none !important; /* Overrides scaleX distortion for translations */
+    white-space: normal !important; /* Allows layout-friendly text wrapping */
+    padding: 0 3px;
+    border-radius: 2px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    display: inline-block;
+}
