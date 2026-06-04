@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Header from './components/Header';
 import MobileHeader from './components/MobileHeader';
 import LearningSection from './components/LearningSection';
 import CoursePlayer from './components/CoursePlayer';
 import Button from './components/Button';
 import type { Course, Lesson, CourseDocument, Selection } from './types';
+import { sortSelectionsLessons } from './components/courseUtils';
 
 // Extend window interface to support Google APIs
 declare global {
@@ -20,16 +21,16 @@ const App: React.FC = () => {
   const [startingLessonId, setStartingLessonId] = useState<string | null>(null);
 
   // Google API Settings
-  const googleConfig = {
+  const googleConfig = useMemo(() => ({
     clientId: localStorage.getItem('gdrive_client_id') || ((import.meta as any).env.VITE_GOOGLE_CLIENT_ID || ''),
     apiKey: localStorage.getItem('gdrive_api_key') || ((import.meta as any).env.VITE_GOOGLE_API_KEY || '')
-  };
+  }), []);
   const [isLoadingDrive, setIsLoadingDrive] = useState(false);
-  const [googleToken, setGoogleToken] = useState<string | null>(localStorage.getItem('google_access_token') || null);
+  const [googleToken, setGoogleToken] = useState<string | null>(() => localStorage.getItem('google_access_token'));
 
   // Import Modal States
   const [showImportModal, setShowImportModal] = useState(false);
-  const [importCourseName, setImportCourseName] = useState('Khóa học CFA');
+  const [importCourseName, setImportCourseName] = useState('');
   const [selectedVideoFolder, setSelectedVideoFolder] = useState<{ id: string; name: string } | null>(null);
   const [selectedWorkbookFolder, setSelectedWorkbookFolder] = useState<{ id: string; name: string } | null>(null);
   const [selectedMocktestFolder, setSelectedMocktestFolder] = useState<{ id: string; name: string } | null>(null);
@@ -67,8 +68,9 @@ const App: React.FC = () => {
         try {
           const parsed = JSON.parse(cachedCourse);
           if (parsed && typeof parsed === 'object' && parsed.name && Array.isArray(parsed.selections)) {
+            parsed.selections = sortSelectionsLessons(parsed.selections);
             setCourse(parsed);
-            setView('player');
+            // Don't auto-navigate to player — let user land on homepage (watch history tab)
             
             // Find the last watched lesson in this course
             let progress: Record<string, any> = {};
@@ -170,7 +172,7 @@ const App: React.FC = () => {
             
             if (type === 'video') {
               setSelectedVideoFolder({ id: folderId, name: folderName });
-              setImportCourseName(folderName);
+              setImportCourseName(prev => prev.trim() ? prev : folderName);
             } else if (type === 'workbook') {
               setSelectedWorkbookFolder({ id: folderId, name: folderName });
             } else if (type === 'mocktest') {
@@ -200,7 +202,7 @@ const App: React.FC = () => {
 
   // Helper to match files by subject keywords
   const getSubjectKey = (name: string): string => {
-    const upper = name.toUpperCase();
+    const upper = name.toUpperCase().replace(/_/g, ' ');
     
     // Check standalone abbreviations first (highest priority) to avoid matching substrings like "ci" in "efficiency"
     if (/\bQUANT\b/i.test(upper)) return 'QUANT';
@@ -423,10 +425,24 @@ const App: React.FC = () => {
         if (dotDate) {
           return new Date(parseInt(dotDate[3]), parseInt(dotDate[2]) - 1, parseInt(dotDate[1]));
         }
-        // Format 2: _YYYY_MMDD (e.g. "CFA_ETHICS_2025_0115")
-        const underscoreDate = title.match(/_(\d{4})_(\d{2})(\d{2})(?:\D|$)/);
+        // Format 2: _YYYY_MMDD or _YYYY_DDMM (e.g. "CFA_ETHICS_2025_0115" or "CFA1_ETHICS_2024_0812")
+        const underscoreDate = title.match(/(?:^|_)(\d{4})_(\d{2})(\d{2})(?:\D|$)/);
         if (underscoreDate) {
-          return new Date(parseInt(underscoreDate[1]), parseInt(underscoreDate[2]) - 1, parseInt(underscoreDate[3]));
+          const y = parseInt(underscoreDate[1], 10);
+          const n1 = parseInt(underscoreDate[2], 10);
+          const n2 = parseInt(underscoreDate[3], 10);
+          let d = n1;
+          let m = n2;
+          // If second part is not a valid month (> 12), it must be the day, so first part is month
+          if (n2 > 12 && n1 <= 12) {
+            d = n2;
+            m = n1;
+          } else if (n2 <= 12 && n1 <= 31) {
+            // Otherwise, default to DD/MM as requested by the user
+            d = n1;
+            m = n2;
+          }
+          return new Date(y, m - 1, d);
         }
         // Format 3: YYYY-MM-DD
         const isoDate = title.match(/(\d{4})-(\d{2})-(\d{2})/);
@@ -537,7 +553,7 @@ const App: React.FC = () => {
     setSelectedVideoFolder(null);
     setSelectedWorkbookFolder(null);
     setSelectedMocktestFolder(null);
-    setImportCourseName('Khóa học CFA');
+    setImportCourseName('');
     setShowImportModal(true);
   };
 
@@ -614,6 +630,7 @@ const App: React.FC = () => {
       try {
         const parsed = JSON.parse(cachedCourse);
         if (parsed && typeof parsed === 'object' && parsed.name && Array.isArray(parsed.selections)) {
+          parsed.selections = sortSelectionsLessons(parsed.selections);
           setCourse(parsed);
           localStorage.setItem('last_active_course_name', parsed.name);
           setView('player');
@@ -703,15 +720,26 @@ const App: React.FC = () => {
       {/* Import Course Modal (Video, Workbook, Mocktest) */}
       {showImportModal && (
         <div
+          className="modal-overlay-blur"
           style={{
-            position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.75)',
+            position: 'fixed', inset: 0,
             zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center',
             padding: '16px',
           }}
         >
           <div
             className="modal-playful"
-            style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+            style={{
+              width: '100%',
+              maxWidth: '480px',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              backgroundColor: 'var(--color-canvas)',
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--color-hairline)',
+              boxShadow: '0 20px 48px rgba(0, 0, 0, 0.15)',
+            }}
           >
             {/* Modal Header */}
             <div
@@ -736,6 +764,8 @@ const App: React.FC = () => {
               <Button
                 variant="pearl"
                 onClick={() => setShowImportModal(false)}
+                aria-label="Đóng cửa sổ nhập khóa học"
+                title="Đóng"
                 style={{
                   width: '28px',
                   height: '28px',
@@ -766,7 +796,7 @@ const App: React.FC = () => {
                   type="text"
                   value={importCourseName}
                   onChange={(e) => setImportCourseName(e.target.value)}
-                  placeholder="Nhập tên khóa học..."
+                  placeholder="Nhập tên khóa học"
                 />
               </div>
 
@@ -777,21 +807,21 @@ const App: React.FC = () => {
                   required: true,
                   type: 'video' as const,
                   selected: selectedVideoFolder,
-                  defaultText: 'Bắt buộc — chứa file MP4',
+                  defaultText: 'Bắt buộc (chứa file MP4)',
                 },
                 {
                   label: 'Thư mục Workbook',
                   required: false,
                   type: 'workbook' as const,
                   selected: selectedWorkbookFolder,
-                  defaultText: 'Tùy chọn — chứa PDF bài tập',
+                  defaultText: 'Tùy chọn (chứa PDF bài tập)',
                 },
                 {
                   label: 'Thư mục Mocktest',
                   required: false,
                   type: 'mocktest' as const,
                   selected: selectedMocktestFolder,
-                  defaultText: 'Tùy chọn — chứa PDF đề thi',
+                  defaultText: 'Tùy chọn (chứa PDF đề thi)',
                 },
               ].map(({ label, required, type, selected, defaultText }) => (
                 <div
@@ -803,9 +833,9 @@ const App: React.FC = () => {
                     gap: '12px',
                     padding: '12px 16px',
                     border: `1px solid ${selected ? 'var(--color-primary)' : 'var(--color-hairline)'}`,
-                    borderRadius: 'var(--radius-lg)',
+                    borderRadius: 'var(--radius-sm)',
                     backgroundColor: selected ? 'rgba(0, 102, 204, 0.04)' : 'var(--color-canvas-parchment)',
-                    transition: 'all 200ms ease',
+                    transition: 'border-color 200ms ease, background-color 200ms ease',
                   }}
                 >
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1, minWidth: 0 }}>
@@ -885,8 +915,9 @@ const App: React.FC = () => {
       {/* Google Drive Loading Overlay */}
       {isLoadingDrive && (
         <div
+          className="modal-overlay-blur"
           style={{
-            position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.75)',
+            position: 'fixed', inset: 0,
             zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
         >
@@ -898,6 +929,10 @@ const App: React.FC = () => {
               textAlign: 'center',
               maxWidth: '360px',
               width: '90%',
+              backgroundColor: 'var(--color-canvas)',
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--color-hairline)',
+              boxShadow: '0 20px 48px rgba(0, 0, 0, 0.15)',
             }}
           >
             {/* CSS Spinner */}
@@ -913,10 +948,10 @@ const App: React.FC = () => {
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '17px', color: 'var(--color-ink)', margin: 0 }}>
-                Kết nối Google Drive...
+                Kết nối Google Drive…
               </p>
               <p style={{ fontSize: '13px', color: 'var(--color-ink-muted-48)', margin: 0, lineHeight: 1.4 }}>
-                Đang quét và xây dựng cấu trúc khóa học từ đám mây...
+                Đang quét và xây dựng cấu trúc khóa học từ đám mây…
               </p>
             </div>
           </div>

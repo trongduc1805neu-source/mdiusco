@@ -30,6 +30,22 @@ const Button: React.FC<ButtonProps> = ({
   title,
   id,
 }) => {
+  const getVariantClass = (): string => {
+    switch (variant) {
+      case 'primary':
+        return 'btn-primary';
+      case 'secondary':
+        return 'btn-secondary';
+      case 'pearl':
+        return 'btn-pearl-capsule';
+      case 'dark':
+        return 'btn-dark-utility';
+      case 'ghost':
+      default:
+        return 'btn-ghost';
+    }
+  };
+
   const getStyles = (): React.CSSProperties => {
     const base: React.CSSProperties = {
       display: 'inline-flex',
@@ -39,7 +55,6 @@ const Button: React.FC<ButtonProps> = ({
       fontFamily: "var(--font-body, 'Inter', sans-serif)",
       cursor: disabled ? 'not-allowed' : 'pointer',
       opacity: disabled ? 0.45 : 1,
-      outline: 'none',
       userSelect: 'none',
       border: 'none',
       boxSizing: 'border-box',
@@ -54,7 +69,7 @@ const Button: React.FC<ButtonProps> = ({
           padding: '0 20px',
           backgroundColor: 'var(--primary)',
           color: '#FFFFFF',
-          borderRadius: 'var(--radius-pill)',
+          borderRadius: 'var(--radius-sm)',
           fontSize: '17px',
           fontWeight: 400,
         };
@@ -66,7 +81,7 @@ const Button: React.FC<ButtonProps> = ({
           backgroundColor: 'var(--background)',
           color: 'var(--text-primary)',
           border: '1px solid #D2D2D7',
-          borderRadius: 'var(--radius-pill)',
+          borderRadius: 'var(--radius-sm)',
           fontSize: '17px',
           fontWeight: 400,
         };
@@ -117,7 +132,7 @@ const Button: React.FC<ButtonProps> = ({
       type={type}
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
-      className={`btn-interactive ${className}`}
+      className={`btn-interactive ${getVariantClass()} ${className}`}
       style={combinedStyles}
       title={title}
     >

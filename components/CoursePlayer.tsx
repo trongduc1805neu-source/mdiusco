@@ -5,11 +5,12 @@ import IconBadge from './IconBadge';
 import Button from './Button';
 import {
     ArrowLeft, Pin, RefreshCw, Menu, ChevronDown, ChevronRight,
-    Play, CheckCircle2, Circle, Clock, Star, ArrowRight,
-    BookOpen, FileText, Maximize2, BookMarked, ClipboardList,
-    Eye, Layers, Languages
+    Play, CheckCircle2, Circle, Clock, ArrowRight,
+    BookOpen, FileText, BookMarked, ClipboardList,
+    Eye, Languages
 } from 'lucide-react';
 import '../styles/CoursePlayer.css';
+import { sortSelectionsLessons } from './courseUtils';
 
 const getFakeDurationInMinutes = (lessonId: string): number => {
     return 180;
@@ -105,56 +106,58 @@ const getShortDocName = (name: string, isMocktest: boolean = false): string => {
         return `Reading ${readingMatch[1]}`;
     }
     if (cleanName.length > 22) {
-        return cleanName.substring(0, 20) + '...';
+        return cleanName.substring(0, 20) + '…';
     }
     return cleanName;
+};
+
+const getCleanSubject = (title: string): string => {
+    const match = title.match(/(?:^|[_.-])(QUANT|ECON|FSA|CI|EQUITY|FI|DER|AI|PM|ETHICS)(?:[_.-]|$)/i);
+    if (match) {
+        const sub = match[1].toUpperCase();
+        const map: Record<string, string> = {
+            QUANT: 'Quant',
+            ECON: 'Econ',
+            FSA: 'FSA',
+            CI: 'CI',
+            EQUITY: 'Equity',
+            FI: 'FI',
+            DER: 'Derivatives',
+            AI: 'Alternative',
+            PM: 'Portfolio',
+            ETHICS: 'Ethics'
+        };
+        return map[sub] || match[1];
+    }
+    return '';
 };
 
 const cleanLessonTitle = (title: string): string => {
     if (!title) return '';
     
-    let clean = title.replace(/\.[^/.]+$/, "");
+    const clean = title.replace(/\.[^/.]+$/, "");
+    const subject = getCleanSubject(clean);
     
     const buoiMatch = clean.match(/Buổi\s*(\d+)/i);
-    let buoiText = '';
     if (buoiMatch) {
-        buoiText = `Buổi học ${buoiMatch[1]}`;
+        const buoiStr = `Buổi ${buoiMatch[1]}`;
+        return subject ? `${subject} - ${buoiStr}` : buoiStr;
     }
     
-    const parsedDate = clean.match(/(\d{2}\.\d{2}\.\d{4})/);
-    let dateText = '';
-    if (parsedDate) {
-        dateText = parsedDate[1];
-    } else {
-        const ethicsDateMatch = clean.match(/_(\d{4})_(\d{2})(\d{2})/);
-        if (ethicsDateMatch) {
-            dateText = `${ethicsDateMatch[2]}.${ethicsDateMatch[3]}.${ethicsDateMatch[1]}`;
-        }
-    }
+    let remaining = clean;
+    remaining = remaining.replace(/^[A-Z0-9._-]+_QUANT_/i, '');
+    remaining = remaining.replace(/^[A-Z0-9._-]+_ECON_/i, '');
+    remaining = remaining.replace(/^[A-Z0-9._-]+_FSA_/i, '');
+    remaining = remaining.replace(/^[A-Z0-9._-]+_CI_/i, '');
+    remaining = remaining.replace(/^[A-Z0-9._-]+_EQUITY_/i, '');
+    remaining = remaining.replace(/^[A-Z0-9._-]+_FI_/i, '');
+    remaining = remaining.replace(/^[A-Z0-9._-]+_DER_/i, '');
+    remaining = remaining.replace(/^[A-Z0-9._-]+_AI_/i, '');
+    remaining = remaining.replace(/^[A-Z0-9._-]+_PM_/i, '');
+    remaining = remaining.replace(/^[A-Z0-9._-]+_ETHICS_/i, '');
+    remaining = remaining.replace(/^CFA\d+_/i, '');
     
-    const isGvNote = clean.toLowerCase().includes('gv note');
-    let gvText = isGvNote ? ' (GV Note)' : '';
-    
-    if (buoiText) {
-        if (dateText) {
-            return `${buoiText}${gvText} - Ngày ${dateText}`;
-        }
-        return `${buoiText}${gvText}`;
-    }
-    
-    clean = clean.replace(/^[A-Z0-9._-]+_QUANT_/i, '');
-    clean = clean.replace(/^[A-Z0-9._-]+_ECON_/i, '');
-    clean = clean.replace(/^[A-Z0-9._-]+_FSA_/i, '');
-    clean = clean.replace(/^[A-Z0-9._-]+_CI_/i, '');
-    clean = clean.replace(/^[A-Z0-9._-]+_EQUITY_/i, '');
-    clean = clean.replace(/^[A-Z0-9._-]+_FI_/i, '');
-    clean = clean.replace(/^[A-Z0-9._-]+_DER_/i, '');
-    clean = clean.replace(/^[A-Z0-9._-]+_AI_/i, '');
-    clean = clean.replace(/^[A-Z0-9._-]+_PM_/i, '');
-    clean = clean.replace(/^[A-Z0-9._-]+_ETHICS_/i, '');
-    clean = clean.replace(/^CFA\d+_/i, '');
-    
-    return clean;
+    return subject ? `${subject} - ${remaining}` : remaining;
 };
 
 const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, startingLessonId, onSyncDriveCourse }) => {
@@ -169,7 +172,10 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, sta
     const [mocktestData, setMocktestData] = useState<{ rawData: string | ArrayBuffer; type: 'html' | 'txt' | 'pdf' } | null>(null);
     const [isMocktestLoading, setIsMocktestLoading] = useState<boolean>(false);
     const [progressData, setProgressData] = useState<ProgressData>({});
-    const [isPinned, setIsPinned] = useState<boolean>(false);
+    const [pinnedFolderId, setPinnedFolderId] = useState<string | null>(() => localStorage.getItem('gdrive_default_folder_id'));
+    const isPinned = useMemo(() => {
+        return !!(course?.driveFolderId && pinnedFolderId === course.driveFolderId);
+    }, [course, pinnedFolderId]);
 
     // Watch progress states
     const [videoProgressSeconds, setVideoProgressSeconds] = useState<number>(0);
@@ -213,16 +219,21 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, sta
         }
     };
 
-    const allLessons = useMemo(() => {
+    const sortedSelections = useMemo(() => {
         if (!course || !Array.isArray(course.selections)) return [];
-        return course.selections.flatMap(selection => (selection && Array.isArray(selection.lessons)) ? selection.lessons : []);
+        return sortSelectionsLessons(course.selections);
     }, [course]);
+
+    const allLessons = useMemo(() => {
+        if (!sortedSelections) return [];
+        return sortedSelections.flatMap(selection => (selection && Array.isArray(selection.lessons)) ? selection.lessons : []);
+    }, [sortedSelections]);
 
     // Find current section of active lesson
     const currentSection = useMemo(() => {
-        if (!course || !activeLesson || !Array.isArray(course.selections)) return null;
-        return course.selections.find(s => s && Array.isArray(s.lessons) && s.lessons.some(l => l && l.id === activeLesson.id)) || null;
-    }, [course, activeLesson]);
+        if (!activeLesson || !sortedSelections) return null;
+        return sortedSelections.find(s => s && Array.isArray(s.lessons) && s.lessons.some(l => l && l.id === activeLesson.id)) || null;
+    }, [sortedSelections, activeLesson]);
 
     const matchingWorkbookAnswer = useMemo(() => {
         if (!activeWorkbook || !currentSection?.workbooks) return null;
@@ -322,13 +333,7 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, sta
         }
     }, []);
 
-    // Check if current course is the default pinned course
-    useEffect(() => {
-        if (course && course.driveFolderId) {
-            const defaultFolderId = localStorage.getItem('gdrive_default_folder_id');
-            setIsPinned(defaultFolderId === course.driveFolderId);
-        }
-    }, [course]);
+    // Pinned course status derived from course & pinnedFolderId
 
     // Initialize course lessons, progress, and select starting lesson
     useEffect(() => {
@@ -504,6 +509,7 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, sta
 
     // Watch workbook file change and fetch content if HTML/TXT/PDF
     useEffect(() => {
+        let active = true;
         const doc = showWorkbookAnswer && matchingWorkbookAnswer ? matchingWorkbookAnswer : activeWorkbook;
         if (!doc) {
             setWorkbookData(null);
@@ -520,22 +526,32 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, sta
             const isBinary = doc.type === 'pdf';
             fetchFileContent(doc.driveFileId, isBinary)
                 .then(rawData => {
-                    setWorkbookData({ rawData, type: doc.type });
+                    if (active) {
+                        setWorkbookData({ rawData, type: doc.type });
+                    }
                 })
                 .catch(err => {
                     console.error("Failed to load workbook content directly:", err);
-                    setWorkbookData(null); // Fallback to iframe
+                    if (active) {
+                        setWorkbookData(null); // Fallback to iframe
+                    }
                 })
                 .finally(() => {
-                    setIsWorkbookLoading(false);
+                    if (active) {
+                        setIsWorkbookLoading(false);
+                    }
                 });
         } else {
             setWorkbookData(null);
         }
+        return () => {
+            active = false;
+        };
     }, [activeWorkbook, showWorkbookAnswer, matchingWorkbookAnswer, fetchFileContent]);
 
     // Watch mocktest file change and fetch content if HTML/TXT/PDF
     useEffect(() => {
+        let active = true;
         const doc = showMocktestAnswer && matchingMocktestAnswer ? matchingMocktestAnswer : activeMocktest;
         if (!doc) {
             setMocktestData(null);
@@ -551,18 +567,27 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, sta
             const isBinary = doc.type === 'pdf';
             fetchFileContent(doc.driveFileId, isBinary)
                 .then(rawData => {
-                    setMocktestData({ rawData, type: doc.type });
+                    if (active) {
+                        setMocktestData({ rawData, type: doc.type });
+                    }
                 })
                 .catch(err => {
                     console.error("Failed to load mocktest content directly:", err);
-                    setMocktestData(null); // Fallback to iframe
+                    if (active) {
+                        setMocktestData(null); // Fallback to iframe
+                    }
                 })
                 .finally(() => {
-                    setIsMocktestLoading(false);
+                    if (active) {
+                        setIsMocktestLoading(false);
+                    }
                 });
         } else {
             setMocktestData(null);
         }
+        return () => {
+            active = false;
+        };
     }, [activeMocktest, showMocktestAnswer, matchingMocktestAnswer, fetchFileContent]);
 
     // Background auto-save progress timer
@@ -745,9 +770,9 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, sta
     };
 
     const findNextLesson = (): Lesson | null => {
-        if (!course || !activeLesson) return null;
+        if (!activeLesson || !sortedSelections) return null;
         let foundCurrent = false;
-        for (const selection of course.selections) {
+        for (const selection of sortedSelections) {
             for (const lesson of selection.lessons) {
                 if (foundCurrent) {
                     return lesson;
@@ -803,8 +828,8 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, sta
         setIsMobileSidebarOpen(false);
         
         // Ensure the selection containing the clicked lesson is expanded
-        if (course) {
-            for (const selection of course.selections) {
+        if (sortedSelections) {
+            for (const selection of sortedSelections) {
                 if (selection.lessons.some(l => l.id === lesson.id)) {
                     setExpandedSelections(prev => ({ ...prev, [selection.name]: true }));
                     break;
@@ -835,7 +860,7 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, sta
             localStorage.removeItem('gdrive_default_workbook_folder_id');
             localStorage.removeItem('gdrive_default_mocktest_folder_id');
             localStorage.removeItem('gdrive_default_course_name');
-            setIsPinned(false);
+            setPinnedFolderId(null);
             alert('Đã hủy ghim khóa học này làm mặc định.');
         } else {
             localStorage.setItem('gdrive_default_folder_id', course.driveFolderId);
@@ -850,7 +875,7 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, sta
                 localStorage.removeItem('gdrive_default_mocktest_folder_id');
             }
             localStorage.setItem('gdrive_default_course_name', course.name);
-            setIsPinned(true);
+            setPinnedFolderId(course.driveFolderId);
             alert(`Đã ghim khóa học "${course.name}" làm mặc định tải khi mở web.`);
         }
     };
@@ -920,10 +945,10 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, sta
 
     // Compute global progress
     const globalProgress = React.useMemo(() => {
-        if (!course || !Array.isArray(course.selections)) return { total: 0, completed: 0, pct: 0 };
+        if (!sortedSelections) return { total: 0, completed: 0, pct: 0 };
         let total = 0;
         let completed = 0;
-        course.selections.forEach(sel => {
+        sortedSelections.forEach(sel => {
             if (!sel || !Array.isArray(sel.lessons)) return;
             sel.lessons.forEach(lesson => {
                 total++;
@@ -932,18 +957,18 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, sta
             });
         });
         return { total, completed, pct: total > 0 ? Math.round((completed / total) * 100) : 0 };
-    }, [course, progressData]);
+    }, [course, sortedSelections, progressData]);
 
     // ─── SIDEBAR: Tree-structured curriculum with Lucide icons ───
     const renderCurriculumSidebar = () => {
-        if (!course || !Array.isArray(course.selections)) {
+        if (!course || !sortedSelections || sortedSelections.length === 0) {
             return (
                 <div style={{ padding: '24px 14px', color: 'var(--color-ink-muted-48)', fontSize: '0.82rem', textAlign: 'center', lineHeight: 1.6 }}>
                     Kết nối Google Drive để tải nội dung khóa học.
                 </div>
             );
         }
-        return course.selections.map((selection, sIndex) => {
+        return sortedSelections.map((selection, sIndex) => {
             if (!selection) return null;
             const lessons = Array.isArray(selection.lessons) ? selection.lessons : [];
             const completedLessonsCount = lessons.filter(lesson => {
@@ -978,8 +1003,16 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, sta
                                         key={`wb-${wIndex}`}
                                         className={`resource-item ${isActive ? 'active' : ''}`}
                                         onClick={(e) => handleDocumentClick(e, doc, false)}
+                                        role="button"
+                                        tabIndex={0}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                e.preventDefault();
+                                                handleDocumentClick(e as any, doc, false);
+                                            }
+                                        }}
                                     >
-                                        <BookMarked size={16} strokeWidth={2.5} style={{ color: isActive ? 'var(--color-accent)' : 'var(--color-muted-fg)', flexShrink: 0 }} />
+                                        <BookMarked size={16} strokeWidth={2.5} style={{ color: isActive ? 'var(--color-accent)' : 'var(--color-muted-fg)', flexShrink: 0 }} aria-hidden="true" />
                                         <div className="resource-info">
                                             <span className="resource-name">{cleanName}</span>
                                         </div>
@@ -999,16 +1032,24 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, sta
                                     <li
                                         className="resource-item"
                                         onClick={() => toggleMocktestCollapse(selection.name)}
+                                        role="button"
+                                        tabIndex={0}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                e.preventDefault();
+                                                toggleMocktestCollapse(selection.name);
+                                            }
+                                        }}
                                     >
-                                        <ClipboardList size={16} strokeWidth={2.5} style={{ color: 'var(--color-muted-fg)', flexShrink: 0 }} />
+                                        <ClipboardList size={16} strokeWidth={2.5} style={{ color: 'var(--color-muted-fg)', flexShrink: 0 }} aria-hidden="true" />
                                         <div className="resource-info">
                                             <span className="resource-name">Đề thi Mocktest</span>
                                             <span className="resource-type">PDF</span>
                                         </div>
                                         <span style={{ marginLeft: 'auto', flexShrink: 0 }}>
                                             {isMocktestExpanded
-                                                ? <ChevronDown size={12} strokeWidth={2.5} style={{ color: 'var(--color-ink-muted-48)' }} />
-                                                : <ChevronRight size={12} strokeWidth={2.5} style={{ color: 'var(--color-ink-muted-48)' }} />
+                                                ? <ChevronDown size={12} strokeWidth={2.5} style={{ color: 'var(--color-ink-muted-48)' }} aria-hidden="true" />
+                                                : <ChevronRight size={12} strokeWidth={2.5} style={{ color: 'var(--color-ink-muted-48)' }} aria-hidden="true" />
                                             }
                                         </span>
                                     </li>
@@ -1020,9 +1061,17 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, sta
                                                 key={`mt-${mIndex}`}
                                                 className={`resource-item ${isActive ? 'active' : ''}`}
                                                 onClick={(e) => handleDocumentClick(e, doc, true)}
+                                                role="button"
+                                                tabIndex={0}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter' || e.key === ' ') {
+                                                        e.preventDefault();
+                                                        handleDocumentClick(e as any, doc, true);
+                                                    }
+                                                }}
                                                 style={{ paddingLeft: '2rem' }}
                                             >
-                                                <FileText size={14} strokeWidth={2.5} style={{ color: isActive ? 'var(--color-accent)' : 'var(--color-muted-fg)', flexShrink: 0 }} />
+                                                <FileText size={14} strokeWidth={2.5} style={{ color: isActive ? 'var(--color-accent)' : 'var(--color-muted-fg)', flexShrink: 0 }} aria-hidden="true" />
                                                 <div className="resource-info">
                                                     <span className="resource-name">{cleanName}</span>
                                                 </div>
@@ -1051,28 +1100,42 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, sta
                                     key={lesson.id || lIndex}
                                     ref={(el) => { lessonRefs.current.set(lesson.id, el); }}
                                     tabIndex={0}
+                                    role="button"
                                     onClick={() => handleLessonClick(lesson)}
                                     onFocus={() => setFocusedLessonId(lesson.id)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            handleLessonClick(lesson);
+                                        }
+                                    }}
                                     className={`${isLessonActive ? 'active' : ''} ${focusedLessonId === lesson.id && !isLessonActive ? 'focused' : ''}`}
                                 >
                                     <div
                                         className={`lesson-checkbox ${isCompleted ? 'completed' : ''}`}
                                         onClick={(e) => toggleLessonCompletion(e, lesson)}
+                                        role="button"
+                                        tabIndex={0}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                e.preventDefault();
+                                                toggleLessonCompletion(e as any, lesson);
+                                            }
+                                        }}
                                         title="Đánh dấu hoàn thành"
                                         style={{ cursor: 'pointer' }}
                                     >
                                         {isCompleted
-                                            ? <CheckCircle2 size={14} strokeWidth={2.5} style={{ color: 'white' }} />
+                                            ? <CheckCircle2 size={14} strokeWidth={2.5} style={{ color: 'white' }} aria-hidden="true" />
                                             : (isLessonActive
-                                                ? <Play size={10} strokeWidth={2.5} fill="currentColor" style={{ color: 'var(--color-accent)' }} />
-                                                : <Circle size={14} strokeWidth={1.5} style={{ color: 'var(--color-hairline)' }} />
+                                                ? <Play size={10} strokeWidth={2.5} fill="currentColor" style={{ color: 'var(--color-accent)' }} aria-hidden="true" />
+                                                : <Circle size={14} strokeWidth={1.5} style={{ color: 'var(--color-hairline)' }} aria-hidden="true" />
                                             )
                                         }
                                     </div>
                                     <div className="lesson-info">
                                         <span>{lIndex + 1}. {cleanLessonTitle(lesson.title)}</span>
                                         <div className="lesson-meta">
-                                            <Play size={10} strokeWidth={2.5} style={{ color: 'var(--color-ink-muted-48)' }} />
                                             <span>{durationText}</span>
                                         </div>
                                     </div>
@@ -1125,7 +1188,7 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, sta
                         <>
                             <span style={{ color: 'var(--color-hairline)', flexShrink: 0 }}>·</span>
                             <span style={{ fontSize: '0.78rem', color: 'var(--color-ink-muted-48)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '240px' }}>
-                                {activeLesson.title}
+                                {cleanLessonTitle(activeLesson.title)}
                             </span>
                         </>
                     )}
@@ -1199,24 +1262,36 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, sta
                     </div>
 
                     {/* ── TABS — Pill style with Lucide icons ── */}
-                    <div className="course-info-tabs">
+                    <div className="course-info-tabs" role="tablist">
                         <ul>
                             <li>
                                 <a href="#" onClick={(e) => { e.preventDefault(); handleTabClick('video'); }}
+                                   role="tab"
+                                   aria-selected={activeTab === 'video'}
+                                   tabIndex={0}
+                                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleTabClick('video'); } }}
                                    className={`tab-video ${activeTab === 'video' ? 'active' : ''}`}>
-                                    <Play size={14} strokeWidth={2.5} />
+                                    <Play size={14} strokeWidth={2.5} aria-hidden="true" />
                                     Video bài giảng
                                 </a>
                             </li>
                             <li>
                                 <a href="#" onClick={(e) => { e.preventDefault(); handleTabClick('workbook'); }}
+                                   role="tab"
+                                   aria-selected={activeTab === 'workbook'}
+                                   tabIndex={0}
+                                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleTabClick('workbook'); } }}
                                    className={`tab-workbook ${activeTab === 'workbook' ? 'active' : ''}`}>
-                                    <BookOpen size={14} strokeWidth={2.5} />
+                                    <BookOpen size={14} strokeWidth={2.5} aria-hidden="true" />
                                     Workbook
                                 </a>
                             </li>
                             <li>
                                 <a href="#" onClick={(e) => { e.preventDefault(); handleTabClick('mocktest'); }}
+                                   role="tab"
+                                   aria-selected={activeTab === 'mocktest'}
+                                   tabIndex={0}
+                                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleTabClick('mocktest'); } }}
                                    className={`tab-mocktest ${activeTab === 'mocktest' ? 'active' : ''}`}>
                                     <ClipboardList size={14} strokeWidth={2.5} />
                                     Mocktest
@@ -1249,7 +1324,7 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, sta
                                         margin: 0,
                                         lineHeight: 1.3,
                                     }}>
-                                        {activeLesson.title}
+                                        {cleanLessonTitle(activeLesson.title)}
                                     </h1>
                                     
                                     <div style={{
@@ -1339,8 +1414,8 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, sta
                                 <div className="pdf-viewer-wrapper">
                                     {isWorkbookLoading ? (
                                         <div className="pdf-loading-spinner">
-                                            <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite' }} />
-                                            <span>Đang tải tài liệu...</span>
+                                            <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite' }} aria-hidden="true" />
+                                            <span>Đang tải tài liệu…</span>
                                         </div>
                                     ) : workbookData ? (
                                         workbookData.type === 'pdf' ? (
@@ -1418,8 +1493,8 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, sta
                                 <div className="pdf-viewer-wrapper">
                                     {isMocktestLoading ? (
                                         <div className="pdf-loading-spinner">
-                                            <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite' }} />
-                                            <span>Đang tải đề thi...</span>
+                                            <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite' }} aria-hidden="true" />
+                                            <span>Đang tải đề thi…</span>
                                         </div>
                                     ) : mocktestData ? (
                                         mocktestData.type === 'pdf' ? (
@@ -1459,7 +1534,6 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({ onNavigateHome, course, sta
                 <aside className="course-content-sidebar" style={{ width: `${sidebarWidth}px` }}>
                     <div className="sidebar-header">
                         <h3 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <Layers size={16} strokeWidth={2.5} style={{ color: 'var(--color-accent)' }} />
                             Nội dung khóa học
                         </h3>
                     </div>

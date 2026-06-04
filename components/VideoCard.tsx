@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, BookOpen, ClipboardList, Star } from 'lucide-react';
+import { Play, BookOpen, ClipboardList } from 'lucide-react';
 
 const getFallbackGradient = (text: string = '') => {
   const t = text || '';
@@ -71,18 +71,26 @@ const VideoCard: React.FC<VideoCardProps> = ({
     const isMock = displayTitle?.toLowerCase().includes('mock');
     const isWb = displayTitle?.toLowerCase().includes('read') || displayTitle?.toLowerCase().includes('book');
     if (isMock) {
-      return <ClipboardList size={32} strokeWidth={1.5} style={{ color: 'var(--text-secondary)' }} />;
+      return <ClipboardList size={32} strokeWidth={1.5} style={{ color: 'var(--text-secondary)' }} aria-hidden="true" />;
     }
     if (isWb) {
-      return <BookOpen size={32} strokeWidth={1.5} style={{ color: 'var(--text-secondary)' }} />;
+      return <BookOpen size={32} strokeWidth={1.5} style={{ color: 'var(--text-secondary)' }} aria-hidden="true" />;
     }
-    return <Play size={32} strokeWidth={1.5} style={{ color: 'var(--text-secondary)', marginLeft: '4px' }} />;
+    return <Play size={32} strokeWidth={1.5} style={{ color: 'var(--text-secondary)', marginLeft: '4px' }} aria-hidden="true" />;
   };
 
   return (
     <div
       className="store-utility-card"
       onClick={onNavigateToPlayer}
+      role={onNavigateToPlayer ? 'button' : undefined}
+      tabIndex={onNavigateToPlayer ? 0 : undefined}
+      onKeyDown={onNavigateToPlayer ? (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onNavigateToPlayer();
+        }
+      } : undefined}
       style={{
         minWidth: '280px',
         width: '280px',
@@ -96,7 +104,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
         userSelect: 'none',
         display: 'flex',
         flexDirection: 'column',
-        transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+        transition: 'box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
       }}
     >
       {/* Product Image Stage (Quiet Surface #F5F5F7, centered minimal icon or video thumbnail) */}
@@ -137,6 +145,8 @@ const VideoCard: React.FC<VideoCardProps> = ({
           <img
             src={thumbnailLink}
             alt={displayTitle}
+            width={280}
+            height={148}
             onError={() => setImageError(true)}
             style={{
               width: '100%',
@@ -235,7 +245,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
                   {progress.toFixed(0)}% hoàn thành
                 </span>
                 <span style={{ fontSize: '13px', fontWeight: 600, color: '#0056d2', display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
-                  <Play size={10} fill="currentColor" stroke="none" />
+                  <Play size={10} fill="currentColor" stroke="none" aria-hidden="true" />
                   Tiếp tục
                 </span>
               </div>

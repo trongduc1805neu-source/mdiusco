@@ -1,6 +1,5 @@
 import React from 'react';
-import { Search, Plus } from 'lucide-react';
-import Button from './Button';
+import { Search } from 'lucide-react';
 import misoLogo from '../MISO.png';
 
 interface HeaderProps {
@@ -20,7 +19,7 @@ const Header: React.FC<HeaderProps> = ({ onLogoClick, onAddDriveCourse }) => {
         position: 'sticky',
         top: 0,
         zIndex: 100,
-        height: '56px',
+        height: '64px',
         display: 'flex',
         alignItems: 'center',
         gap: '16px',
@@ -28,14 +27,17 @@ const Header: React.FC<HeaderProps> = ({ onLogoClick, onAddDriveCourse }) => {
       }}
     >
       {/* Logo (text-only) */}
-      <div
+      <button
         onClick={onLogoClick}
-        role="button"
         aria-label="Trang chủ"
+        className="btn-interactive btn-ghost"
         style={{
+          border: 'none',
+          background: 'none',
+          padding: 0,
           fontFamily: 'var(--font-heading)',
           fontWeight: 600,
-          fontSize: '1.5rem',
+          fontSize: '1.85rem',
           color: 'var(--color-primary)',
           cursor: 'pointer',
           letterSpacing: '-0.02em',
@@ -48,9 +50,10 @@ const Header: React.FC<HeaderProps> = ({ onLogoClick, onAddDriveCourse }) => {
         onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
         onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
       >
-        <span style={{ fontWeight: 800, color: 'var(--color-primary)' }}>mdi</span>
-        <span style={{ fontWeight: 600, color: 'var(--color-ink)' }}>usco</span>
-      </div>
+        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+          <strong style={{ fontWeight: 800, color: 'var(--color-primary)' }}>mdi</strong><span style={{ fontWeight: 600, color: 'var(--color-ink)' }}>usco</span>
+        </span>
+      </button>
 
       {/* Search bar (styled like Apple search pill) */}
       <div
@@ -65,7 +68,7 @@ const Header: React.FC<HeaderProps> = ({ onLogoClick, onAddDriveCourse }) => {
           padding: '0 16px',
           gap: '8px',
           height: '38px',
-          transition: 'all 200ms ease',
+          transition: 'border-color 200ms ease, background-color 200ms ease',
         }}
         onFocusCapture={e => {
           e.currentTarget.style.borderColor = 'var(--color-primary-focus)';
@@ -83,7 +86,7 @@ const Header: React.FC<HeaderProps> = ({ onLogoClick, onAddDriveCourse }) => {
         />
         <input
           type="text"
-          placeholder="Tìm kiếm nội dung bất kỳ..."
+          placeholder="Tìm kiếm nội dung bất kỳ…"
           style={{
             border: 'none',
             outline: 'none',
@@ -98,35 +101,28 @@ const Header: React.FC<HeaderProps> = ({ onLogoClick, onAddDriveCourse }) => {
 
       {/* Right actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginLeft: 'auto' }}>
-        {onAddDriveCourse && (
-          <Button
-            variant="primary"
-            onClick={onAddDriveCourse}
-            title="Thêm khóa học mới từ Google Drive"
-            id="add-course-btn"
+        {/* Clickable Avatar — opens import modal */}
+        <button
+          className="anime-avatar-btn"
+          onClick={onAddDriveCourse}
+          title="Thêm khóa học mới từ Google Drive"
+          aria-label="Thêm khóa học mới từ Google Drive"
+          id="add-course-btn"
+        >
+          <img
+            src={misoLogo}
+            alt="User Avatar"
+            width={38}
+            height={38}
             style={{
-              height: '34px',
-              fontSize: '13px',
+              width: '38px',
+              height: '38px',
+              borderRadius: '50%',
+              objectFit: 'cover',
+              display: 'block',
             }}
-            icon={Plus}
-          >
-            Thêm khóa học
-          </Button>
-        )}
-
-        {/* Avatar using MISO.png */}
-        <img
-          src={misoLogo}
-          alt="User Avatar"
-          style={{
-            width: '34px',
-            height: '34px',
-            borderRadius: '50%',
-            objectFit: 'cover',
-            border: '1px solid var(--color-hairline)',
-            flexShrink: 0,
-          }}
-        />
+          />
+        </button>
       </div>
     </header>
   );
